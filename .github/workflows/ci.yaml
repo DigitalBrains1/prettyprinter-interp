@@ -1,0 +1,110 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # Stack
+  stack:
+    name: Stack / GHC ${{ matrix.ghc }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2"]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v1
+        id: setup-haskell
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          enable-stack: true
+
+      - name: General Setup
+        run: |
+          cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
+          key:
+            ${{ runner.os }}-stack-${{ matrix.ghc }}-${{
+            hashFiles('prettyprinter-interp.cabal', 'stack.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-${{ matrix.ghc }}-
+
+      - name: Build
+        run : |
+          stack build
+
+      - name: Test
+        run : |
+          stack test
+
+  # Cabal
+  cabal:
+    name: Cabal / GHC ${{ matrix.ghc }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2"]
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v1
+        id: setup-haskell
+        with:
+          ghc-version: ${{ matrix.ghc }}
+
+      - name: General Setup
+        run: |
+          cp .ci/cabal.project.local .
+
+      - name: Setup CI
+        run: |
+          cabal v2-freeze
+          mv cabal.project.freeze frozen
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key:
+            ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('frozen',
+            'cabal.project.local') }}
+          restore-keys: |
+            ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+
+      - name: Build
+        run: |
+          cabal v2-update
+          cabal v2-build all
+
+      - name: Test
+        run: |
+          cabal v2-run unittests
+
+  # Mandatory check on GitHub
+  all:
+    name: All jobs finished
+    needs:
+      - cabal
+      - stack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Void
+        run: |
+          echo "All good"
