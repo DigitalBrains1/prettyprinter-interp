@@ -60,6 +60,7 @@
   @
 -}
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Prettyprinter.Interpolate
@@ -72,12 +73,17 @@ module Prettyprinter.Interpolate
   , diii'L
   ) where
 
+#if MIN_VERSION_prettyprinter(1,7,0)
+import Prettyprinter (Pretty(pretty))
+#else
+import Data.Text.Prettyprint.Doc (Pretty(pretty))
+#endif
+
 import Data.String.Interpolate
 import Data.Text (Text)
 import Language.Haskell.TH (Q)
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
 import Language.Haskell.TH.Syntax (Name)
-import Prettyprinter (Pretty(pretty))
 
 wrapper :: Name -> QuasiQuoter -> QuasiQuoter
 wrapper nm wrapped = QuasiQuoter
