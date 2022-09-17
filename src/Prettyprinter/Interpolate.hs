@@ -55,7 +55,6 @@
   @pretty@ invocation, and can simply be used as:
 
   @
-  g :: Doc ()
   g = ['di'|Hello #{f}!|]
   @
 -}
@@ -139,4 +138,4 @@ errQQ :: Name -> String -> Q a
 errQQ nm msg = fail $ show nm <> ": " <> msg
 
 errQQType :: Name -> String -> Q a
-errQQType nm = errQQ nm . ("This QuasiQuoter cannot be used as a " ++)
+errQQType nm ty = errQQ nm $ "This QuasiQuoter cannot be used as a " <> ty
