@@ -1,0 +1,2 @@
+package prettyprinter-interp
+  ghc-options: -Werror
