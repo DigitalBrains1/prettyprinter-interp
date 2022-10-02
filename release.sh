@@ -15,9 +15,9 @@ SDIST=$(find . -name 'prettyprinter-interp-*.tar.gz' | grep -v docs)
 DDIST=$(find . -name 'prettyprinter-interp-*.tar.gz' | grep docs)
 
 echo "To publish a release candidate, run:"
-echo "  cabal upload --username=PeterLebbing --password=\"\$(gpg -d ~/Documents/Hackage-password.gpg)\" ${SDIST}"
-echo "  cabal upload --documentation --username=PeterLebbing --password=\"\$(gpg -d ~/Documents/Hackage-password.gpg)\" ${DDIST}"
+echo "  cabal upload ${SDIST}"
+echo "  cabal upload --documentation ${DDIST}"
 echo ""
 echo "To make a release, run:"
-echo "  cabal upload --publish --username=PeterLebbing --password=\"\$(gpg -d ~/Documents/Hackage-password.gpg)\" ${SDIST}"
-echo "  cabal upload --publish --documentation --username=PeterLebbing --password=\"\$(gpg -d ~/Documents/Hackage-password.gpg)\" ${DDIST}"
+echo "  cabal upload --publish ${SDIST}"
+echo "  cabal upload --publish --documentation ${DDIST}"

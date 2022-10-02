@@ -4,9 +4,9 @@ version:            0.1.0.0
 synopsis:           Efficient interpolation for Prettyprinter
 description:
   This package provides efficient interpolation
-  of [@string-interpolate@](https://hackage.haskell.org/package/string-interpolate)
+  of @[string-interpolate](https://hackage.haskell.org/package/string-interpolate)@
   quasi quoters when used
-  with [@prettyprinter@](https://hackage.haskell.org/package/prettyprinter).
+  with @[prettyprinter](https://hackage.haskell.org/package/prettyprinter)@.
 homepage:           https://github.com/DigitalBrains1/prettyprinter-interp
 bug-reports:        https://github.com/DigitalBrains1/prettyprinter-interp/issues
 license:            BSD-2-Clause
