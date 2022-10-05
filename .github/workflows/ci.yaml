@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2"]
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.4"]
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Haskell
-        uses: haskell/actions/setup@v1
+        uses: haskell/actions/setup@v2
         id: setup-haskell
         with:
           ghc-version: ${{ matrix.ghc }}
@@ -34,7 +34,7 @@ jobs:
           cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
 
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
           key:
@@ -57,14 +57,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2"]
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.4"]
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Haskell
-        uses: haskell/actions/setup@v1
+        uses: haskell/actions/setup@v2
         id: setup-haskell
         with:
           ghc-version: ${{ matrix.ghc }}
@@ -79,7 +79,7 @@ jobs:
           mv cabal.project.freeze frozen
 
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key:
