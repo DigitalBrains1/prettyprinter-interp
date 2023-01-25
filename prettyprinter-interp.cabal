@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               prettyprinter-interp
-version:            0.1.0.0
+version:            0.2.0.0
 synopsis:           Efficient interpolation for Prettyprinter
 description:
   This package provides efficient interpolation
@@ -13,7 +13,7 @@ license:            BSD-2-Clause
 license-file:       LICENSE
 author:             Peter Lebbing
 maintainer:         peter@digitalbrains.com
-copyright:          (C) 2022     , Peter Lebbing
+copyright:          (C) 2022-2023, Peter Lebbing
 category:           Data, Text
 extra-source-files: CHANGELOG.md
 

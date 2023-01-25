@@ -1,5 +1,5 @@
 {-|
-  Copyright   :  (C) 2022     , Peter Lebbing
+  Copyright   :  (C) 2022-2023, Peter Lebbing
   License     :  BSD2 (see the file LICENSE)
   Maintainer  :  Peter Lebbing <peter@digitalbrains.com>
 
@@ -66,10 +66,13 @@ module Prettyprinter.Interpolate
   ( di
   , __di
   , diii
-  , d__i'E
-  , d__i'L
+  , __di'E
+  , __di'L
   , diii'E
   , diii'L
+    -- ** Deprecated
+  , d__i'E
+  , d__i'L
   ) where
 
 #if MIN_VERSION_prettyprinter(1,7,0)
@@ -113,14 +116,14 @@ diii = wrapper 'diii iii
 -- | Wrapper around the '__i'E' quasi quoter, producing a t'Prettyprinter.Doc'
 --
 -- Newlines in the text are converted to 'Prettyprinter.line'.
-d__i'E :: QuasiQuoter
-d__i'E = wrapper 'd__i'E __i'E
+__di'E :: QuasiQuoter
+__di'E = wrapper '__di'E __i'E
 
 -- | Wrapper around the '__i'L' quasi quoter, producing a t'Prettyprinter.Doc'
 --
 -- Newlines in the text are converted to 'Prettyprinter.line'.
-d__i'L :: QuasiQuoter
-d__i'L = wrapper 'd__i'L __i'L
+__di'L :: QuasiQuoter
+__di'L = wrapper '__di'L __i'L
 
 -- | Wrapper around the 'iii'E' quasi quoter, producing a t'Prettyprinter.Doc'
 --
@@ -133,6 +136,14 @@ diii'E = wrapper 'diii'E iii'E
 -- Newlines in the text are converted to 'Prettyprinter.line'.
 diii'L :: QuasiQuoter
 diii'L = wrapper 'diii'L iii'L
+
+d__i'E :: QuasiQuoter
+d__i'E = wrapper 'd__i'E __i'E
+{-# DEPRECATED d__i'E "'d__i'E' is a deprecated alias for '__di'E' and will be removed in prettyprinter-interp 0.3" #-}
+
+d__i'L :: QuasiQuoter
+d__i'L = wrapper 'd__i'L __i'L
+{-# DEPRECATED d__i'L "'d__i'L' is a deprecated alias for '__di'L' and will be removed in prettyprinter-interp 0.3" #-}
 
 errQQ :: Name -> String -> Q a
 errQQ nm msg = fail $ show nm <> ": " <> msg
