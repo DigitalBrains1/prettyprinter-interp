@@ -1,3 +1,3 @@
-resolver: nightly-2022-10-05
+resolver: lts-20.8
 ghc-options:
   "$locals": -Wall -Wcompat -Werror
