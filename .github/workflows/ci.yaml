@@ -34,24 +34,44 @@ jobs:
       - name: General Setup
         run: |
           cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
+          # Print out some information for debugging purposes
+          ghc --version
+          stack --version
+          cat stack.yaml
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v3
+        id: cache
         with:
           path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
           key:
             ${{ runner.os }}-stack-${{ matrix.ghc }}-${{
             hashFiles('prettyprinter-interp.cabal', 'stack.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-stack-${{ matrix.ghc }}-
+          restore-keys: ${{ runner.os }}-stack-${{ matrix.ghc }}-
+
+      - name: Install dependencies
+        run: stack build --only-dependencies
+
+      # Cache dependencies already at this point, so that we do not have to
+      # rebuild them should the subsequent steps fail
+      - name: Save cached dependencies
+        uses: actions/cache/save@v3
+        # Trying to save over an existing cache gives distracting
+        # "Warning: Cache save failed." since they are immutable
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run : |
-          stack build
+        # Note: the --pedantic switch adds -Wall -Werror to the options passed
+        # to GHC. Options specified in stack.yaml (like -Wcompat) are still
+        # passed; it is cumulative. Future versions of Stack might add behavior
+        # to --pedantic.
+        run : stack build --pedantic
 
       - name: Test
-        run : |
-          stack test
+        run : stack test
 
   # Cabal
   cabal:
@@ -76,30 +96,49 @@ jobs:
       - name: General Setup
         run: |
           cp .ci/cabal.project.local .
+          # Print out some information for debugging purposes
+          ghc --version
+          cabal --version
+          cat cabal.project.local
 
       - name: Setup CI
-        run: |
-          cabal v2-freeze
-          mv cabal.project.freeze frozen
+        # This generates dist-newstyle/cache/plan.json with hashes for all
+        # dependencies, for cache invalidation.
+        run: cabal v2-build all --enable-tests --dry-run
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        env:
+          key:
+            ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{
+            steps.setup-haskell.outputs.cabal-version }}
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key:
-            ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('frozen',
-            'cabal.project.local') }}
-          restore-keys: |
-            ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+            ${{ env.key }}-${{ hashFiles('cabal.project.local',
+            'dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - name: Install dependencies
+        run: cabal v2-build all --enable-tests --only-dependencies
+
+      # Cache dependencies already at this point, so that we do not have to
+      # rebuild them should the subsequent steps fail
+      - name: Save cached dependencies
+        uses: actions/cache/save@v3
+        # Trying to save over an existing cache gives distracting
+        # "Warning: Cache save failed." since they are immutable
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run: |
-          cabal v2-update
-          cabal v2-build all
+        run: cabal v2-build all
 
       - name: Test
-        run: |
-          cabal v2-run unittests
+        run: cabal v2-run unittests
 
   # Mechanism copied from https://github.com/clash-lang/clash-compiler/
   all:
