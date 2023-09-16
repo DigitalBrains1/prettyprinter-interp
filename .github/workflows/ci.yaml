@@ -33,7 +33,9 @@ jobs:
 
       - name: General Setup
         run: |
-          cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
+          declare GHC_VERSION=${{ matrix.ghc }}
+          # Rewrite an argument of the form X.Y.Z to X.Y
+          cp .ci/stack-${GHC_VERSION%.*}.yaml stack.yaml
           # Print out some information for debugging purposes
           ghc --version
           stack --version
