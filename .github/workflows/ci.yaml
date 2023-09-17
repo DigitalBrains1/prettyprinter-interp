@@ -52,7 +52,7 @@ jobs:
           restore-keys: ${{ runner.os }}-stack-${{ matrix.ghc }}-
 
       - name: Install dependencies
-        run: stack build --only-dependencies
+        run: stack build --test --only-dependencies
 
       # Cache dependencies already at this point, so that we do not have to
       # rebuild them should the subsequent steps fail
