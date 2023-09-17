@@ -3,4 +3,4 @@ ghc-options:
   "$locals": -Wall -Wcompat
 
 extra-deps:
-- string-interpolate-0.3.1.2@sha256:4d0987f453c66040aa8e482fe28a7d3cdc9d8df01b698bc92f42a592cfb337db,4268
+  - string-interpolate-0.3.2.1@sha256:a2fc9f9fa5b2ba254227164d2218c1665cff5fd3dae750e77163f6a9d7dcbb90,4125
