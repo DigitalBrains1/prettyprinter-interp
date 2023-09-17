@@ -1,0 +1,13 @@
+package prettyprinter-interp
+  ghc-options: -Werror
+prefer-oldest: True
+constraints:
+  any.text ==1.2.3.0,
+  any.prettyprinter ==1.2,
+  any.string-interpolate ==0.3.1.0,
+  any.tasty ==1.2.2,
+  any.tasty-hunit ==0.10.0.2,
+  -- text-conversions-0.3.1.1 misses lower bound
+  any.base64-bytestring ==1.0.0.0,
+  -- string-interpolate-0.3.1.0 misses lower bound
+  any.utf8-string ==0.3.1,
