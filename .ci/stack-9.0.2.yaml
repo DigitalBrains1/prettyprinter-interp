@@ -1,3 +1,0 @@
-resolver: lts-19.33
-ghc-options:
-  "$locals": -Wall -Wcompat -Werror

@@ -20,7 +20,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
 
       - name: Setup Haskell
         uses: haskell/actions/setup@v2
@@ -31,25 +33,47 @@ jobs:
 
       - name: General Setup
         run: |
-          cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
+          declare GHC_VERSION=${{ matrix.ghc }}
+          # Rewrite an argument of the form X.Y.Z to X.Y
+          cp .ci/stack-${GHC_VERSION%.*}.yaml stack.yaml
+          # Print out some information for debugging purposes
+          ghc --version
+          stack --version
+          cat stack.yaml
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v3
+        id: cache
         with:
           path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
           key:
             ${{ runner.os }}-stack-${{ matrix.ghc }}-${{
             hashFiles('prettyprinter-interp.cabal', 'stack.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-stack-${{ matrix.ghc }}-
+          restore-keys: ${{ runner.os }}-stack-${{ matrix.ghc }}-
+
+      - name: Install dependencies
+        run: stack build --only-dependencies
+
+      # Cache dependencies already at this point, so that we do not have to
+      # rebuild them should the subsequent steps fail
+      - name: Save cached dependencies
+        uses: actions/cache/save@v3
+        # Trying to save over an existing cache gives distracting
+        # "Warning: Cache save failed." since they are immutable
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run : |
-          stack build
+        # Note: the --pedantic switch adds -Wall -Werror to the options passed
+        # to GHC. Options specified in stack.yaml (like -Wcompat) are still
+        # passed; it is cumulative. Future versions of Stack might add behavior
+        # to --pedantic.
+        run : stack build --pedantic
 
       - name: Test
-        run : |
-          stack test
+        run : stack test
 
   # Cabal
   cabal:
@@ -61,7 +85,9 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
 
       - name: Setup Haskell
         uses: haskell/actions/setup@v2
@@ -72,39 +98,92 @@ jobs:
       - name: General Setup
         run: |
           cp .ci/cabal.project.local .
+          # Print out some information for debugging purposes
+          ghc --version
+          cabal --version
+          cat cabal.project.local
 
       - name: Setup CI
-        run: |
-          cabal v2-freeze
-          mv cabal.project.freeze frozen
+        # This generates dist-newstyle/cache/plan.json with hashes for all
+        # dependencies, for cache invalidation.
+        run: cabal v2-build all --enable-tests --dry-run
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        env:
+          key:
+            ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{
+            steps.setup-haskell.outputs.cabal-version }}
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key:
-            ${{ runner.os }}-ghc-${{ matrix.ghc }}-${{ hashFiles('frozen',
-            'cabal.project.local') }}
-          restore-keys: |
-            ${{ runner.os }}-ghc-${{ matrix.ghc }}-
+            ${{ env.key }}-${{ hashFiles('cabal.project.local',
+            'dist-newstyle/cache/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - name: Install dependencies
+        run: cabal v2-build all --enable-tests --only-dependencies
+
+      # Cache dependencies already at this point, so that we do not have to
+      # rebuild them should the subsequent steps fail
+      - name: Save cached dependencies
+        uses: actions/cache/save@v3
+        # Trying to save over an existing cache gives distracting
+        # "Warning: Cache save failed." since they are immutable
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.setup-haskell.outputs.cabal-store }}
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run: |
-          cabal v2-update
-          cabal v2-build all
+        run: cabal v2-build all
 
       - name: Test
-        run: |
-          cabal v2-run unittests
+        run: cabal v2-run unittests
 
-  # Mandatory check on GitHub
+  # Mechanism copied from https://github.com/clash-lang/clash-compiler/
   all:
     name: All jobs finished
+    if: always()
     needs:
       - cabal
       - stack
     runs-on: ubuntu-latest
     steps:
-      - name: Void
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - name: Check dependencies for failures
         run: |
-          echo "All good"
+          # Test all dependencies for success/failure
+          set -x
+          # True if at least one dependency succeeded
+          success="${{ contains(needs.*.result, 'success') }}"
+          # True if at least one dependency failed
+          fail="${{ contains(needs.*.result, 'failure') }}"
+          set +x
+
+          # Test whether success/fail variables contain sane values
+          if [[ "${success}" != "true" && "${success}" != "false" ]]; then exit 1; fi
+          if [[ "${fail}"    != "true" && "${fail}"    != "false" ]]; then exit 1; fi
+
+          # We want to fail if one or more dependencies fail. For safety, we introduce
+          # a second check: if no dependencies succeeded something weird is going on.
+          if [[ "${fail}" == "true" || "${success}" == "false" ]]; then
+            echo "One or more dependency failed, or no dependency succeeded."
+            exit 1
+          fi
+
+      # Currently, ubuntu-latest already has it installed, but keep it around in
+      # case they ever change that
+      #
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get -y install python3-yaml
+
+      - name: Check that the 'all' job depends on all other jobs
+        run: .ci/all_check.py
