@@ -1,0 +1,8 @@
+package prettyprinter-interp
+  ghc-options: -Werror
+allow-newer:
+  text,
+  tasty,
+constraints:
+  any.text == 2.1,
+  any.tasty == 1.5,

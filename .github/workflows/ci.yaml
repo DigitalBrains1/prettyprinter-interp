@@ -77,11 +77,18 @@ jobs:
 
   # Cabal
   cabal:
-    name: Cabal / GHC ${{ matrix.ghc }}
+    name: Cabal / GHC ${{ matrix.ghc }} ${{ matrix.project-variant }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.7", "9.6.2"]
+        project-variant: [""]
+        include:
+          - ghc: 8.6.5
+            project-variant: -lower
+          - ghc: 9.6.2
+            project-variant: -upper
+
       fail-fast: false
     steps:
       - name: Checkout
@@ -97,7 +104,8 @@ jobs:
 
       - name: General Setup
         run: |
-          cp .ci/cabal.project.local .
+          cp .ci/cabal.project.local${{ matrix.project-variant}} \
+            cabal.project.local
           # Print out some information for debugging purposes
           ghc --version
           cabal --version
@@ -114,7 +122,8 @@ jobs:
         env:
           key:
             ${{ runner.os }}-ghc-${{ matrix.ghc }}-cabal-${{
-            steps.setup-haskell.outputs.cabal-version }}
+            steps.setup-haskell.outputs.cabal-version }}${{
+            matrix.project-variant }}
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key:
