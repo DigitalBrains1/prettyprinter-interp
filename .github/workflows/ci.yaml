@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.7", "9.6.2"]
+        ghc: ["8.6", "8.8", "8.10", "9.0", "9.2", "9.4", "9.6"]
       fail-fast: false
     steps:
       - name: Checkout
@@ -25,17 +25,15 @@ jobs:
           show-progress: false
 
       - name: Setup Haskell
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup@v2
         id: setup-haskell
         with:
-          ghc-version: ${{ matrix.ghc }}
           enable-stack: true
+          stack-no-global: true
 
       - name: General Setup
         run: |
-          declare GHC_VERSION=${{ matrix.ghc }}
-          # Rewrite an argument of the form X.Y.Z to X.Y
-          cp .ci/stack-${GHC_VERSION%.*}.yaml stack.yaml
+          cp .ci/stack-${{ matrix.ghc }}.yaml stack.yaml
           # Print out some information for debugging purposes
           ghc --version
           stack --version
@@ -81,12 +79,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.7", "9.6.2"]
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.7", "9.6.3"]
         project-variant: [""]
         include:
           - ghc: 8.6.5
             project-variant: -lower
-          - ghc: 9.6.2
+          - ghc: 9.6.3
             project-variant: -upper
 
       fail-fast: false
@@ -97,7 +95,7 @@ jobs:
           show-progress: false
 
       - name: Setup Haskell
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup@v2
         id: setup-haskell
         with:
           ghc-version: ${{ matrix.ghc }}
