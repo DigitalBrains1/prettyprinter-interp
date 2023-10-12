@@ -84,7 +84,7 @@ jobs:
         include:
           - ghc: 8.6.5
             project-variant: -lower
-          - ghc: 9.6.3
+          - ghc: 9.8.1
             project-variant: -upper
 
       fail-fast: false
@@ -99,6 +99,7 @@ jobs:
         id: setup-haskell
         with:
           ghc-version: ${{ matrix.ghc }}
+          cabal-update: false
 
       - name: General Setup
         run: |
@@ -112,7 +113,9 @@ jobs:
       - name: Setup CI
         # This generates dist-newstyle/cache/plan.json with hashes for all
         # dependencies, for cache invalidation.
-        run: cabal v2-build all --enable-tests --dry-run
+        run: |
+          cabal v2-update
+          cabal v2-build all --enable-tests --dry-run
 
       - name: Restore cached dependencies
         uses: actions/cache/restore@v3

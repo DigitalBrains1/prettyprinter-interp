@@ -23,12 +23,12 @@ source-repository head
 source-repository this
   type:     git
   location: https://github.com/DigitalBrains1/prettyprinter-interp
-  tag:      v0.2.0.0+r2
+  tag:      v0.2.0.0+r3
 
 library
   exposed-modules:    Prettyprinter.Interpolate
 
-  build-depends:      base                      >=4.12      && < 4.19,
+  build-depends:      base                      >=4.12      && < 4.20,
                       prettyprinter             >=1.2       && < 1.8,
                       string-interpolate        ^>=0.3.1.0,
                       template-haskell,
