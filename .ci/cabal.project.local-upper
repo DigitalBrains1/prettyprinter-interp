@@ -35,10 +35,3 @@ constraints:
   ghc-prim installed,
   integer-gmp installed,
   template-haskell installed
-
-allow-newer:
-  tasty,
-
-constraints:
-  any.text == 2.1,
-  any.tasty == 1.5,
