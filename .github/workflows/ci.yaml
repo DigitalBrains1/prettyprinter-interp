@@ -147,15 +147,15 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run: cabal v2-build all
+        run: cabal v2-build all --enable-tests
 
       - name: Test
-        run: cabal v2-run unittests
+        run: cabal v2-test --test-show-details=direct
 
   # Mechanism copied from https://github.com/clash-lang/clash-compiler/
   all:
     name: All jobs finished
-    if: always()
+    if: ${{ !cancelled() }}
     needs:
       - cabal
       - stack
