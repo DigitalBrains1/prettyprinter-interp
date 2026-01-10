@@ -69,7 +69,7 @@ jobs:
         # to GHC. Options specified in stack.yaml (like -Wcompat) are still
         # passed; it is cumulative. Future versions of Stack might add behavior
         # to --pedantic.
-        run : stack build --pedantic
+        run : stack build --test --no-run-tests --pedantic
 
       - name: Test
         run : stack test
@@ -116,7 +116,7 @@ jobs:
         # dependencies, for cache invalidation.
         run: |
           cabal v2-update
-          cabal v2-build all --enable-tests --dry-run
+          cabal v2-build all --dry-run
 
       - name: Restore cached dependencies
         uses: actions/cache/restore@v3
@@ -134,7 +134,7 @@ jobs:
           restore-keys: ${{ env.key }}-
 
       - name: Install dependencies
-        run: cabal v2-build all --enable-tests --only-dependencies
+        run: cabal v2-build all --only-dependencies
 
       # Cache dependencies already at this point, so that we do not have to
       # rebuild them should the subsequent steps fail
@@ -148,7 +148,7 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run: cabal v2-build all --enable-tests
+        run: cabal v2-build all
 
       - name: Test
         run: cabal v2-test --test-show-details=direct
