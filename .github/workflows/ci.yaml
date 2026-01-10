@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6", "8.8", "8.10", "9.0", "9.2", "9.4", "9.6", "9.8", "9.10"]
+        ghc: ["8.6", "8.8", "8.10", "9.0", "9.2", "9.4", "9.6", "9.8", "9.10", "9.12"]
       fail-fast: false
     steps:
       - name: Checkout
@@ -69,7 +69,7 @@ jobs:
         # to GHC. Options specified in stack.yaml (like -Wcompat) are still
         # passed; it is cumulative. Future versions of Stack might add behavior
         # to --pedantic.
-        run : stack build --pedantic
+        run : stack build --test --no-run-tests --pedantic
 
       - name: Test
         run : stack test
@@ -80,12 +80,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.8", "9.6.6", "9.8.4", "9.10.1"]
+        ghc: ["8.6.5", "8.8.4", "8.10.7", "9.0.2", "9.2.8", "9.4.8", "9.6.7", "9.8.4",
+              "9.10.3", "9.12.2"]
         project-variant: [""]
         include:
           - ghc: 8.6.5
             project-variant: -lower
-          - ghc: 9.12.1
+          - ghc: 9.14.1
             project-variant: -upper
 
       fail-fast: false
@@ -116,7 +117,7 @@ jobs:
         # dependencies, for cache invalidation.
         run: |
           cabal v2-update
-          cabal v2-build all --enable-tests --dry-run
+          cabal v2-build all --dry-run
 
       - name: Restore cached dependencies
         uses: actions/cache/restore@v3
@@ -134,7 +135,7 @@ jobs:
           restore-keys: ${{ env.key }}-
 
       - name: Install dependencies
-        run: cabal v2-build all --enable-tests --only-dependencies
+        run: cabal v2-build all --only-dependencies
 
       # Cache dependencies already at this point, so that we do not have to
       # rebuild them should the subsequent steps fail
@@ -148,7 +149,7 @@ jobs:
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Build
-        run: cabal v2-build all --enable-tests
+        run: cabal v2-build all
 
       - name: Test
         run: cabal v2-test --test-show-details=direct

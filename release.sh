@@ -6,6 +6,7 @@ rm -rf dist-newstyle
 rm -rf .ghc.env*
 
 cabal sdist
+cabal v2-build prettyprinter-interp --only-dependencies
 cabal v2-haddock prettyprinter-interp \
   --haddock-for-hackage \
   --haddock-hyperlinked-source \

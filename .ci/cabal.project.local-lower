@@ -1,6 +1,9 @@
 package prettyprinter-interp
   ghc-options: -Werror
+  tests: True
+
 prefer-oldest: True
+
 constraints:
   any.text ==1.2.3.0,
   any.prettyprinter ==1.2,
