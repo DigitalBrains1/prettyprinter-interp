@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           show-progress: false
 
@@ -41,7 +41,7 @@ jobs:
           cat stack.yaml
 
       - name: Restore cached dependencies
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v6
         id: cache
         with:
           path: ${{ steps.setup-haskell.outputs.stack-root }}/snapshots
@@ -56,7 +56,7 @@ jobs:
       # Cache dependencies already at this point, so that we do not have to
       # rebuild them should the subsequent steps fail
       - name: Save cached dependencies
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v6
         # Trying to save over an existing cache gives distracting
         # "Warning: Cache save failed." since they are immutable
         if: steps.cache.outputs.cache-hit != 'true'
@@ -92,7 +92,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           show-progress: false
 
@@ -120,7 +120,7 @@ jobs:
           cabal v2-build all --dry-run
 
       - name: Restore cached dependencies
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v6
         id: cache
         env:
           key:
@@ -140,7 +140,7 @@ jobs:
       # Cache dependencies already at this point, so that we do not have to
       # rebuild them should the subsequent steps fail
       - name: Save cached dependencies
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v6
         # Trying to save over an existing cache gives distracting
         # "Warning: Cache save failed." since they are immutable
         if: steps.cache.outputs.cache-hit != 'true'
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           show-progress: false
 
